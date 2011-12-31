@@ -25,7 +25,7 @@ Upload the Free Wordpress Plugin For 1ShoppingCart.com plugin to your blog, Acti
 
 That's it! You're done!
 
-This plugin is povided for FREE by [EqualServing.Com](http://EqualServing.com "EqualServing.com").
+This plugin is provided for FREE by [EqualServing.Com](http://EqualServing.com "EqualServing.com").
 
 == Frequently Asked Questions ==
 
@@ -70,3 +70,5 @@ Please read additional information at [EqualServing.com](http://www.equalserving
 == Changelog ==
 = Version 0.1 =
 * First release.
+= Version 0.2 =
+* Fix typos and provide more help on the settings page.
