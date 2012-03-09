@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H8KWR
 Tags: 1ShoppingCart,1ShoppingCart.com,mcssl.com,mcssl
 Requires at least: 3.0
 Tested up to: 3.2.1
-Stable tag: 0.2
+Stable tag: 0.3
 
 Using shortcodes, you can easily display product details from your 1ShoppingCart.com product catalog on pages or posts within your Wordpress site.
 
@@ -72,3 +72,5 @@ Please read additional information at [EqualServing.com](http://www.equalserving
 * First release.
 = Version 0.2 =
 * Fix typos and provide more help on the settings page.
+= Version 0.3 =
+* Fix typo in screenshot and allow a domain masked buy now url or one that uses the mcssl.com url.
