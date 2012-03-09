@@ -74,3 +74,5 @@ Please read additional information at [EqualServing.com](http://www.equalserving
 * Fix typos and provide more help on the settings page.
 = Version 0.3 =
 * Fix typo in screenshot and allow a domain masked buy now url or one that uses the mcssl.com url.
+= Version 0.4 =
+* Re-tag
