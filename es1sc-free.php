@@ -3,7 +3,7 @@
 * Plugin Name: ES 1ShoppingCart
 * Plugin URI: http://www.equalserving.com/products-page/wordpress-plugin/free-wordpress-plugin-for-1shoppingcart/
 * Description: Using shortcodes, you can easily display product details from your 1ShoppingCart.com product catalog on pages or posts within your WordPress site. All that needs to be entered on the page or post is the title and the shortcut code [es1sc_prodlist]. The shortcode [es1sc_prodlist] without any additional arguments will display your entire active product catalog. You can limit the list to specific products by adding the argument prd_ids to the shortcode such as - [es1sc_prodlist prd_ids="8644152,8644145,8580674,8569588,8569508,8361626"].
-* Version: 0.2
+* Version: 0.4
 * Author: EqualServing.com
 * Author URI: http://www.equalserving.com/
 * Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H8KWRPTET2SK2&lc=US&item_name=Free%20Wordpress%20Plugin%20for%201ShoppingCart&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
@@ -14,7 +14,7 @@
 *
 */
 
-define( 'ES1SCVERSION', '0.2' );
+define( 'ES1SCVERSION', '0.3' );
 
 require(plugin_dir_path( __FILE__ ) .'include/OneShopAPI.php');
 $merchantId = get_option('es1sc_merchant_id');
@@ -112,7 +112,7 @@ function es1sc_plugin_options() {
 			"type" => "text"
 		),
 		array("name" => __('Buy Now URL','thematic'),
-			"desc" => __('Your 1ShoppingCart.com URL <br /> usually something like '.get_option('siteurl').'/?cmd.php','thematic'),
+			"desc" => __('Your 1ShoppingCart.com URL <br /> usually something like '.get_option('siteurl').'/cmd.php','thematic'),
 			"id" => "es1sc_buynow_url",
 			"std" => "999999",
 			"type" => "text",
@@ -345,7 +345,13 @@ function es1sc_product_list($atts) {
 			} else {
 				$ProductPrice .= '<span class="regular">Regular Price: $'.$product_details->ProductInfo->ProductPrice.'</span>';
 			}
-			$BuyNow = '<a href="'.get_option('es1sc_buynow_url').'?pid='.$product_details->ProductInfo->VisibleId.'"><img src="'.get_option('es1sc_cart_image').'" alt="Add to Cart" /></a>';
+			$es1sc_buynow_url = trim(get_option('es1sc_buynow_url'));
+			if (substr($es1sc_buynow_url,-4) == ".php") {
+				$es1sc_buynow_url = $es1sc_buynow_url."?";
+			} else {
+				$es1sc_buynow_url = $es1sc_buynow_url."&";
+			}	
+			$BuyNow = '<a href="'.$es1sc_buynow_url.'pid='.$product_details->ProductInfo->VisibleId.'"><img src="'.get_option('es1sc_cart_image').'" alt="Add to Cart" /></a>';
 			$TitleHyphens = preg_replace("/[^a-zA-Z 0-9]+/", "", strtolower($product_details->ProductInfo->ProductName));
 			$TitleHyphens = str_replace(" ", "-", $TitleHyphens);
 			$aVariables = array('#ProductId','#ProductName', '#ProductImage', '#ShortDescription', '#LongDescription', '#ProductSku', '#ProductPrice','#BuyNow','#ProductHyphenName');
@@ -402,7 +408,13 @@ function _es1sc_product_list($atts) {
 			} else {
 				$ProductPrice .= "$".$product_details->ProductInfo->ProductPrice;
 			}
-			$BuyNow = '<a href="'.get_option('es1sc_buynow_url').'?pid='.$product_details->ProductInfo->VisibleId.'"><img src="'.get_option('es1sc_cart_image').'" alt="Add to Cart" /></a>';
+			$es1sc_buynow_url = trim(get_option('es1sc_buynow_url'));
+			if (substr($es1sc_buynow_url,-4) == ".php") {
+				$es1sc_buynow_url = $es1sc_buynow_url."?";
+			} else {
+				$es1sc_buynow_url = $es1sc_buynow_url."&";
+			}	
+			$BuyNow = '<a href="'.$es1sc_buynow_url.'pid='.$product_details->ProductInfo->VisibleId.'"><img src="'.get_option('es1sc_cart_image').'" alt="Add to Cart" /></a>';
 
 			$aVariables = array('#ProductName', '#ProductImage', '#ShortDescription', '#LongDescription', '#ProductSku', '#ProductPrice','#BuyNow');
 			$aReplacements = array($product_details->ProductInfo->ProductName, $ImageUrl, wpautop($product_details->ProductInfo->ShortDescription), wpautop($product_details->ProductInfo->LongDescription), $product_details->ProductInfo->ProductSku, $ProductPrice, $BuyNow);
