@@ -3,8 +3,8 @@ Contributors: equalserving
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H8KWRPTET2SK2&lc=US&item_name=Free%20Wordpress%20Plugin%20For%201ShoppingCart.com&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: 1ShoppingCart,1ShoppingCart.com,mcssl.com,mcssl
 Requires at least: 3.0
-Tested up to: 3.3.1
-Stable tag: 0.4
+Tested up to: 3.3.2
+Stable tag: 0.5
 
 Using shortcodes, you can easily display product details from your 1ShoppingCart.com product catalog on pages or posts within your Wordpress site.
 
@@ -76,3 +76,5 @@ Please read additional information at [EqualServing.com](http://www.equalserving
 * Fix typo in screenshot and allow a domain masked buy now url or one that uses the mcssl.com url.
 = Version 0.4 =
 * Re-tag
+= Version 0.5 =
+* number_format issue on some instalations.
