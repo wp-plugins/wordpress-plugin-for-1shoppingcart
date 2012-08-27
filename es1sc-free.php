@@ -3,7 +3,7 @@
 * Plugin Name: ES 1ShoppingCart
 * Plugin URI: http://www.equalserving.com/products-page/wordpress-plugin/free-wordpress-plugin-for-1shoppingcart/
 * Description: Using shortcodes, you can easily display product details from your 1ShoppingCart.com product catalog on pages or posts within your WordPress site. All that needs to be entered on the page or post is the title and the shortcut code [es1sc_prodlist]. The shortcode [es1sc_prodlist] without any additional arguments will display your entire active product catalog. You can limit the list to specific products by adding the argument prd_ids to the shortcode such as - [es1sc_prodlist prd_ids="8644152,8644145,8580674,8569588,8569508,8361626"].
-* Version: 0.5
+* Version: 0.6
 * Author: EqualServing.com
 * Author URI: http://www.equalserving.com/
 * Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H8KWRPTET2SK2&lc=US&item_name=Free%20Wordpress%20Plugin%20for%201ShoppingCart&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
@@ -14,7 +14,7 @@
 *
 */
 
-define( 'ES1SCVERSION', '0.5' );
+define( 'ES1SCVERSION', '0.6' );
 
 require(plugin_dir_path( __FILE__ ) .'include/OneShopAPI.php');
 $merchantId = get_option('es1sc_merchant_id');
@@ -245,7 +245,7 @@ function es1sc_plugin_options() {
 	echo '			<div class="meta-box-sortables">';
 						plugin_like();
 						plugin_didyouknow();
-						plugin_help(); 
+						plugin_help();
 	echo '				</div>';
 	echo '				<br/><br/><br/>';
 	echo '			</div>';
@@ -256,7 +256,7 @@ function es1sc_plugin_options() {
 
 
 	echo '</div>';
-	
+
 }
 
 function register_es1scsettings() {
@@ -317,10 +317,21 @@ function es1sc_product_list($atts) {
 			$products_xml = $shop->GetProductsList();
 			$products = @simplexml_load_string($products_xml) or die ("no file loaded");
 			//print_r($products);
-			foreach ($products->Products->Product as $prd_id) {
-				$prd_ids[] = $prd_id;
+			if ($products["success"] == "true") {
+				foreach ($products->Products->Product as $prd_id) {
+					$prd_ids[] = $prd_id;
+				}
+				$limitoffset = $products->NextRecordSet->LimitOffset;
+			} else {
+				// 2040 - No data found. We are not so concerned about this error because there were no changes made since the last synch.
+				if ($products->Error["code"] != "2040") {
+					$body = "The 1ShoppingCart Plugin for Wordpress generated an error. \r\nError Code: ".$products->Error["code"].". Error Message: ".$products->Error."."."\r\n"
+					        ."If you are unable to take corrective action based upon the information contained in this error report, please contact 1ShoppingCart.com Support for assistance.";
+					mail(get_bloginfo('admin_email'), get_bloginfo('name').' 1Shoppingcart.com Plugin for Wordpress Configuration Error', $body);
+					echo str_replace("\r\n", "<br />", $body);
+				}
+				$limitoffset = NULL;
 			}
-			$limitoffset = $products->NextRecordSet->LimitOffset;
 		}
 	}
 	foreach ($prd_ids as $prd_id) {
@@ -338,10 +349,10 @@ function es1sc_product_list($atts) {
 			$ProductPrice = "";
 			if ($product_details->ProductInfo->UseSalePrice == "true") {
 				$ProductPrice .= '<span class="regular">Retail Price: <strike>$'.$product_details->ProductInfo->ProductPrice.'</strike></span> <span class="save-percent">Save: ';
-				$ProductPrice .= number_format(($product_details->ProductInfo->ProductPrice - $product_details->ProductInfo->SalePrice) / $product_details->ProductInfo->ProductPrice * 100, 0, '.', ',').'%';
+				$ProductPrice .= number_format(((float)$product_details->ProductInfo->ProductPrice - (float)$product_details->ProductInfo->SalePrice) / (float)$product_details->ProductInfo->ProductPrice * 100, 0, '.', ',').'%';
 				$ProductPrice .= '</span>  <span class="save-dollar">Save $';
-				$ProductPrice .= number_format($product_details->ProductInfo->ProductPrice - $product_details->ProductInfo->SalePrice, 2, '.', ',');
-				$ProductPrice .= '</span> <span class="sale">Sale Price $'.number_format($product_details->ProductInfo->SalePrice * 1, 2, '.', ',').'</span>';
+				$ProductPrice .= number_format((float)$product_details->ProductInfo->ProductPrice - (float)$product_details->ProductInfo->SalePrice, 2, '.', ',');
+				$ProductPrice .= '</span> <span class="sale">Sale Price $'.(float)number_format($product_details->ProductInfo->SalePrice, 2, '.', ',').'</span>';
 			} else {
 				$ProductPrice .= '<span class="regular">Regular Price: $'.$product_details->ProductInfo->ProductPrice.'</span>';
 			}
@@ -350,7 +361,7 @@ function es1sc_product_list($atts) {
 				$es1sc_buynow_url = $es1sc_buynow_url."?";
 			} else {
 				$es1sc_buynow_url = $es1sc_buynow_url."&";
-			}	
+			}
 			$BuyNow = '<a href="'.$es1sc_buynow_url.'pid='.$product_details->ProductInfo->VisibleId.'"><img src="'.get_option('es1sc_cart_image').'" alt="Add to Cart" /></a>';
 			$TitleHyphens = preg_replace("/[^a-zA-Z 0-9]+/", "", strtolower($product_details->ProductInfo->ProductName));
 			$TitleHyphens = str_replace(" ", "-", $TitleHyphens);
@@ -413,7 +424,7 @@ function _es1sc_product_list($atts) {
 				$es1sc_buynow_url = $es1sc_buynow_url."?";
 			} else {
 				$es1sc_buynow_url = $es1sc_buynow_url."&";
-			}	
+			}
 			$BuyNow = '<a href="'.$es1sc_buynow_url.'pid='.$product_details->ProductInfo->VisibleId.'"><img src="'.get_option('es1sc_cart_image').'" alt="Add to Cart" /></a>';
 
 			$aVariables = array('#ProductName', '#ProductImage', '#ShortDescription', '#LongDescription', '#ProductSku', '#ProductPrice','#BuyNow');
@@ -440,7 +451,7 @@ function postbox($id, $title, $content) {
 		</div>
 	</div>
 <?php
-}	
+}
 
 function plugin_like() {
 	$content = '<p>'.__('Why not do any or all of the following:','es1scplugin').'</p>';
@@ -450,7 +461,7 @@ function plugin_like() {
 	$content .= '<li>- <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H8KWRPTET2SK2&lc=US&item_name=Free%20Wordpress%20Plugin%20for%201ShoppingCart&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted">'.__('Donate a token of your appreciation.','es1scplugin').'</a></li>';
 	$content .= '</ul>';
 	postbox('free-wordpress-plugin-for-1shoppingcart'.'like', 'Like this plugin?', $content);
-}	
+}
 
 function plugin_didyouknow() {
 	$content = '<ul>';
@@ -467,9 +478,9 @@ function plugin_help() {
 	$content .= '<p>Please check following resources:</p>';
 	$content .= '<ul>';
 	$content .= '<li>- <a href="http://www.equalserving.com/products-page/wordpress-plugin/free-wordpress-plugin-for-1shoppingcart/" target="_blank">Visit the Free Wordpress Plugin For 1ShoppingCart.com</a></li>';
-	$content .= '<li>- <a href="http://www.equalserving.com/2011/12/free-wordpress-plugin-for-1shoppingcart-com/" target="_blank">Check the detailed installation instruction</a></li>';	
+	$content .= '<li>- <a href="http://www.equalserving.com/2011/12/free-wordpress-plugin-for-1shoppingcart-com/" target="_blank">Check the detailed installation instruction</a></li>';
 	$content .= '<li>- <a href="http://wpdemo.equalserving.com/store/" target="_blank">See how the plugin works</a></li>';
 	$content .= '</ul>';
 	postbox('free-wordpress-plugin-for-1shoppingcart'.'-help', 'Help', $content);
-}		
+}
 ?>
