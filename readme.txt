@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H8KWR
 Tags: 1ShoppingCart,1ShoppingCart.com,mcssl.com,mcssl
 Requires at least: 3.0
 Tested up to: 3.4.1
-Stable tag: 0.6
+Stable tag: 0.6.1
 
 Using shortcodes, you can easily display product details from your 1ShoppingCart.com product catalog on pages or posts within your Wordpress site.
 
@@ -81,4 +81,6 @@ Or our at our [Equalserving.com Support Forum](https://equalserving.uservoice.co
 * number_format issue on some installations.
 = Version 0.6 =
 * If the 1ShoppingCart.com API credentials are incorrect and error message will display in place of the shortcode. An email will also be sent to the administrator with the same error message. This versionalos corrects a rounding issues on some servers.
+= Version 0.6.1 =
+* Update error message.
 
