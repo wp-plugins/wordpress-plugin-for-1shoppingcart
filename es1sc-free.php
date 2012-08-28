@@ -3,7 +3,7 @@
 * Plugin Name: ES 1ShoppingCart
 * Plugin URI: http://www.equalserving.com/products-page/wordpress-plugin/free-wordpress-plugin-for-1shoppingcart/
 * Description: Using shortcodes, you can easily display product details from your 1ShoppingCart.com product catalog on pages or posts within your WordPress site. All that needs to be entered on the page or post is the title and the shortcut code [es1sc_prodlist]. The shortcode [es1sc_prodlist] without any additional arguments will display your entire active product catalog. You can limit the list to specific products by adding the argument prd_ids to the shortcode such as - [es1sc_prodlist prd_ids="8644152,8644145,8580674,8569588,8569508,8361626"].
-* Version: 0.6
+* Version: 0.6.2
 * Author: EqualServing.com
 * Author URI: http://www.equalserving.com/
 * Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H8KWRPTET2SK2&lc=US&item_name=Free%20Wordpress%20Plugin%20for%201ShoppingCart&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
@@ -14,7 +14,7 @@
 *
 */
 
-define( 'ES1SCVERSION', '0.6' );
+define( 'ES1SCVERSION', '0.6.2' );
 
 require(plugin_dir_path( __FILE__ ) .'include/OneShopAPI.php');
 $merchantId = get_option('es1sc_merchant_id');
@@ -328,7 +328,7 @@ function es1sc_product_list($atts) {
 					$body = "The 1ShoppingCart Plugin for Wordpress generated an error. \r\nError Code: ".$products->Error["code"].". Error Message: ".$products->Error."."."\r\n"
 					        ."If you are unable to take corrective action based upon the information contained in this error report, please contact 1ShoppingCart.com Support for assistance.";
 					mail(get_bloginfo('admin_email'), get_bloginfo('name').' 1Shoppingcart.com Plugin for Wordpress Configuration Error', $body);
-					echo str_replace("\r\n", "<br />", $body);
+					echo "<p>".str_replace("\r\n", "<br />", $body)."</p>";
 				}
 				$limitoffset = NULL;
 			}
@@ -337,39 +337,51 @@ function es1sc_product_list($atts) {
 	foreach ($prd_ids as $prd_id) {
 		$product_details_xml = $shop->GetProductById($prd_id);
 		$product_details = @simplexml_load_string($product_details_xml) or die ("no file loaded");
+		if ($product_details["success"] == "true") {
 
-		if ($product_details->ProductInfo->IsActive == "true") {
-			if ($product_details->ProductInfo->ImageUrl == "") {
-				$ImageUrlSrc = get_option('es1sc_no_image');
-			} else {
-				$ImageUrlSrc = "https://www.mcssl.com".$product_details->ProductInfo->ImageUrl;
-			}
-			$ImageUrl = '<img class="product_image" src="'. $ImageUrlSrc.'" alt="'.$product_details->ProductInfo->ProductName.'" />';
+			if ($product_details->ProductInfo->IsActive == "true") {
+				if ($product_details->ProductInfo->ImageUrl == "") {
+					$ImageUrlSrc = get_option('es1sc_no_image');
+				} else {
+					$ImageUrlSrc = "https://www.mcssl.com".$product_details->ProductInfo->ImageUrl;
+				}
+				$ImageUrl = '<img class="product_image" src="'. $ImageUrlSrc.'" alt="'.$product_details->ProductInfo->ProductName.'" />';
 
-			$ProductPrice = "";
-			if ($product_details->ProductInfo->UseSalePrice == "true") {
-				$ProductPrice .= '<span class="regular">Retail Price: <strike>$'.$product_details->ProductInfo->ProductPrice.'</strike></span> <span class="save-percent">Save: ';
-				$ProductPrice .= number_format(((float)$product_details->ProductInfo->ProductPrice - (float)$product_details->ProductInfo->SalePrice) / (float)$product_details->ProductInfo->ProductPrice * 100, 0, '.', ',').'%';
-				$ProductPrice .= '</span>  <span class="save-dollar">Save $';
-				$ProductPrice .= number_format((float)$product_details->ProductInfo->ProductPrice - (float)$product_details->ProductInfo->SalePrice, 2, '.', ',');
-				$ProductPrice .= '</span> <span class="sale">Sale Price $'.(float)number_format($product_details->ProductInfo->SalePrice, 2, '.', ',').'</span>';
-			} else {
-				$ProductPrice .= '<span class="regular">Regular Price: $'.$product_details->ProductInfo->ProductPrice.'</span>';
-			}
-			$es1sc_buynow_url = trim(get_option('es1sc_buynow_url'));
-			if (substr($es1sc_buynow_url,-4) == ".php") {
-				$es1sc_buynow_url = $es1sc_buynow_url."?";
-			} else {
-				$es1sc_buynow_url = $es1sc_buynow_url."&";
-			}
-			$BuyNow = '<a href="'.$es1sc_buynow_url.'pid='.$product_details->ProductInfo->VisibleId.'"><img src="'.get_option('es1sc_cart_image').'" alt="Add to Cart" /></a>';
-			$TitleHyphens = preg_replace("/[^a-zA-Z 0-9]+/", "", strtolower($product_details->ProductInfo->ProductName));
-			$TitleHyphens = str_replace(" ", "-", $TitleHyphens);
-			$aVariables = array('#ProductId','#ProductName', '#ProductImage', '#ShortDescription', '#LongDescription', '#ProductSku', '#ProductPrice','#BuyNow','#ProductHyphenName');
-			$aReplacements = array($prd_id,$product_details->ProductInfo->ProductName, $ImageUrl, wpautop($product_details->ProductInfo->ShortDescription), wpautop($product_details->ProductInfo->LongDescription), $product_details->ProductInfo->ProductSku, $ProductPrice, $BuyNow, $TitleHyphens);
+				$ProductPrice = "";
+				if ($product_details->ProductInfo->UseSalePrice == "true") {
+					$ProductPrice .= '<span class="regular">Retail Price: <strike>$'.$product_details->ProductInfo->ProductPrice.'</strike></span> <span class="save-percent">Save: ';
+					$ProductPrice .= number_format(((float)$product_details->ProductInfo->ProductPrice - (float)$product_details->ProductInfo->SalePrice) / (float)$product_details->ProductInfo->ProductPrice * 100, 0, '.', ',').'%';
+					$ProductPrice .= '</span>  <span class="save-dollar">Save $';
+					$ProductPrice .= number_format((float)$product_details->ProductInfo->ProductPrice - (float)$product_details->ProductInfo->SalePrice, 2, '.', ',');
+					$ProductPrice .= '</span> <span class="sale">Sale Price $'.(float)number_format($product_details->ProductInfo->SalePrice, 2, '.', ',').'</span>';
+				} else {
+					$ProductPrice .= '<span class="regular">Regular Price: $'.$product_details->ProductInfo->ProductPrice.'</span>';
+				}
+				$es1sc_buynow_url = trim(get_option('es1sc_buynow_url'));
+				if (substr($es1sc_buynow_url,-4) == ".php") {
+					$es1sc_buynow_url = $es1sc_buynow_url."?";
+				} else {
+					$es1sc_buynow_url = $es1sc_buynow_url."&";
+				}
+				$BuyNow = '<a href="'.$es1sc_buynow_url.'pid='.$product_details->ProductInfo->VisibleId.'"><img src="'.get_option('es1sc_cart_image').'" alt="Add to Cart" /></a>';
+				$TitleHyphens = preg_replace("/[^a-zA-Z 0-9]+/", "", strtolower($product_details->ProductInfo->ProductName));
+				$TitleHyphens = str_replace(" ", "-", $TitleHyphens);
+				$aVariables = array('#ProductId','#ProductName', '#ProductImage', '#ShortDescription', '#LongDescription', '#ProductSku', '#ProductPrice','#BuyNow','#ProductHyphenName');
+				$aReplacements = array($prd_id,$product_details->ProductInfo->ProductName, $ImageUrl, wpautop($product_details->ProductInfo->ShortDescription), wpautop($product_details->ProductInfo->LongDescription), $product_details->ProductInfo->ProductSku, $ProductPrice, $BuyNow, $TitleHyphens);
 
-			$retVal .= str_replace($aVariables, $aReplacements, $display_format);
+				$retVal .= str_replace($aVariables, $aReplacements, $display_format);
+			}
+		} else {
+			// 2040 - No data found. We are not so concerned about this error because there were no changes made since the last synch.
+			if ($product_details->Error["code"] != "2040") {
+				$body = "The 1ShoppingCart Plugin for Wordpress generated an error. \r\nError Code: ".$product_details->Error["code"].". Error Message: ".$product_details->Error."."."\r\n"
+				        ."If you are unable to take corrective action based upon the information contained in this error report, please contact 1ShoppingCart.com Support for assistance.";
+				mail(get_bloginfo('admin_email'), get_bloginfo('name').' 1Shoppingcart.com Plugin for Wordpress Configuration Error', $body);
+				echo "<p>".str_replace("\r\n", "<br />", $body)."</p>";
+				break;
+			}
 		}
+
 	}
 
 	return $retVal;
