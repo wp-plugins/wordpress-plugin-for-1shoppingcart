@@ -15,7 +15,6 @@
 */
 
 define( 'ES1SCVERSION', '0.7.0' );
-define( WP_DEBUG, true );
 require(plugin_dir_path( __FILE__ ) .'include/OneShopAPI.php');
 $merchantId = get_option('es1sc_merchant_id');
 $merchantKey = get_option('es1sc_merchant_key');
