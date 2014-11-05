@@ -3,8 +3,8 @@ Contributors: equalserving
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H8KWRPTET2SK2&lc=US&item_name=Free%20Wordpress%20Plugin%20For%201ShoppingCart.com&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: 1ShoppingCart,1ShoppingCart.com,mcssl.com,mcssl
 Requires at least: 3.0
-Tested up to: 3.4.1
-Stable tag: 0.6.2
+Tested up to: 4.0
+Stable tag: 0.7
 
 Using shortcodes, you can easily display product details from your 1ShoppingCart.com product catalog on pages or posts within your Wordpress site.
 
@@ -85,4 +85,8 @@ Or our at our [Equalserving.com Support Forum](https://equalserving.uservoice.co
 * Update error message.
 = Version 0.6.2 =
 * Add banner-772x250.png.
+= Version 0.7 =
+* Do not rely on 1ShoppingCart.com API to determine sale items. Instead, compare regular and sale prices.
+* Minor fixes to the admin panel.
+
 

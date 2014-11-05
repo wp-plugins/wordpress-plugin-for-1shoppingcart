@@ -3,7 +3,7 @@
 * Plugin Name: ES 1ShoppingCart
 * Plugin URI: http://www.equalserving.com/products-page/wordpress-plugin/free-wordpress-plugin-for-1shoppingcart/
 * Description: Using shortcodes, you can easily display product details from your 1ShoppingCart.com product catalog on pages or posts within your WordPress site. All that needs to be entered on the page or post is the title and the shortcut code [es1sc_prodlist]. The shortcode [es1sc_prodlist] without any additional arguments will display your entire active product catalog. You can limit the list to specific products by adding the argument prd_ids to the shortcode such as - [es1sc_prodlist prd_ids="8644152,8644145,8580674,8569588,8569508,8361626"].
-* Version: 0.6.2
+* Version: 0.7.0
 * Author: EqualServing.com
 * Author URI: http://www.equalserving.com/
 * Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H8KWRPTET2SK2&lc=US&item_name=Free%20Wordpress%20Plugin%20for%201ShoppingCart&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
@@ -14,8 +14,8 @@
 *
 */
 
-define( 'ES1SCVERSION', '0.6.2' );
-
+define( 'ES1SCVERSION', '0.7.0' );
+define( WP_DEBUG, true );
 require(plugin_dir_path( __FILE__ ) .'include/OneShopAPI.php');
 $merchantId = get_option('es1sc_merchant_id');
 $merchantKey = get_option('es1sc_merchant_key');
@@ -29,7 +29,7 @@ if ( !in_array(ini_get('safe_mode'), $safe_mode) && ini_get('max_execution_time'
 	@ini_set('max_execution_time', 300);
 }
 
-if ($_POST['option_page'] == "es1sc-settings") {
+if (isset($_POST['option_page']) && $_POST['option_page'] == "es1sc-settings") {
 	es1sc_admin();
 }
 
@@ -39,6 +39,7 @@ if ($_POST['option_page'] == "es1sc-settings") {
  * @param string $file
  * @return array
  */
+
 function es1sc_set_plugin_meta($links, $file) {
 	$plugin = plugin_basename(__FILE__);
 	// create link
@@ -53,8 +54,19 @@ function es1sc_set_plugin_meta($links, $file) {
 }
 add_filter( 'plugin_row_meta', 'es1sc_set_plugin_meta', 10, 2 );
 
+add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'es1sc_plugin_action_links', 10, 2 );
+
+function es1sc_plugin_action_links( $links, $file ) {
+   $links[] = '<a href="'. get_admin_url(null, 'options-general.php?page='.$file) .'">Settings</a>';
+   //$links[] = '<a href="http://EqualServing.com" target="_blank">More plugins by EqualServing</a>';
+    return $links;
+}
+
+
 function es1sc_admin_menu() {
-	add_options_page('1ShoppingCart Options', '1SC Settings', 'administrator', __FILE__, 'es1sc_plugin_options');
+	global $es1sc_settings_page;
+	//$es1sc_settings_page = add_menu_page('EqualServing 1ShoppingCart: General Settings', 'EqualServing 1ShoppingCart', 'administrator', 'es1sc_plugin_options', 'es1sc_plugin_options', 'dashicons-cart', '99.31337' );
+	$es1sc_settings_page = add_options_page('1ShoppingCart Options', '1SC Settings', 'administrator', __FILE__, 'es1sc_plugin_options');
 }
 add_action('admin_menu', 'es1sc_admin_menu');
 
@@ -62,10 +74,10 @@ function es1sc_plugin_options() {
 	if (!current_user_can('manage_options'))  {
 		wp_die( __('You do not have sufficient permissions to access this page.') );
 	}
-	if ( $_REQUEST['saved'] ) {
+	if ( isset($_REQUEST['saved']) && $_REQUEST['saved'] ) {
 		echo '<div id="message" class="updated fade"><p><strong>ES1SC settings saved.</strong></p></div>';
 	}
-	if ( $_REQUEST['reset'] ) {
+	if ( isset($_REQUEST['reset']) && $_REQUEST['reset'] ) {
 		echo '<div id="message" class="updated fade"><p><strong>ES1SC settings reset.</strong></p></div>';
 	}
 
@@ -100,13 +112,13 @@ function es1sc_plugin_options() {
 			"type" => "text"
 		),
 		array("name" => __('No Image URL','thematic'),
-			"desc" => __('The location of the no product image available. This plugin comes with a black and white no image available image. It is located at '.plugin_dir_url(__FILE__).'images/image-not-available.png.','thematic'),
+			"desc" => __('The location of the no product image available. This plugin comes with a black and white no image available image. It is located at <a href="'.plugin_dir_url(__FILE__).'images/image-not-available.png" target="_blank">'.plugin_dir_url(__FILE__).'images/image-not-available.png</a>.','thematic'),
 			"id" => "es1sc_no_image",
 			"std" => "999999",
 			"type" => "text"
 		),
 		array("name" => __('Add to Cart Image URL','thematic'),
-			"desc" => __('The location of the add to cart image. This plugin comes with black, white, red, blue, orange, green and purple add to cart images. They are located at '.plugin_dir_url(__FILE__).'images/add-to-cart-COLOR.png. Just replace COLOR with the actual color you would like to use in lowercase, such as: '.plugin_dir_url(__FILE__).'images/add-to-cart-red.png','thematic'),
+			"desc" => __('The location of the add to cart image. This plugin comes with black, white, red, blue, orange, green and purple add to cart images. They are located at '.plugin_dir_url(__FILE__).'images/add-to-cart-COLOR.png. Just replace COLOR with the actual color you would like to use in lowercase, such as: <a href="'.plugin_dir_url(__FILE__).'images/add-to-cart-black.png" target="_blank">Black</a> :: <a href="'.plugin_dir_url(__FILE__).'images/add-to-cart-white.png" target="_blank">White</a> :: <a href="'.plugin_dir_url(__FILE__).'images/add-to-cart-red.png" target="_blank">Red</a> :: <a href="'.plugin_dir_url(__FILE__).'images/add-to-cart-blue.png" target="_blank">Blue</a> :: <a href="'.plugin_dir_url(__FILE__).'images/add-to-cart-orange.png" target="_blank">Orange</a> :: <a href="'.plugin_dir_url(__FILE__).'images/add-to-cart-green.png" target="_blank">Green</a> :: <a href="'.plugin_dir_url(__FILE__).'images/add-to-cart-purple.png" target="_blank">Purple</a>','thematic'),
 			"id" => "es1sc_cart_image",
 			"std" => "999999",
 			"type" => "text"
@@ -135,8 +147,8 @@ function es1sc_plugin_options() {
 				<th scope="row"><?php echo $value['name']; ?>:</th>
 				<td>
 					<input name="<?php echo $value['id']; ?>" id="<?php echo $value['id']; ?>" type="text"
-						value="<?php echo stripslashes(get_option( $value['id'],$value['std'] )); ?>"/>
-					<?php echo $value['desc']; ?>
+						value="<?php echo stripslashes(get_option( $value['id'],$value['std'] )); ?>" class="regular-text" />
+					<p class="description"><?php echo $value['desc']; ?></p>
 				</td>
 			</tr>
 			<?php
@@ -158,7 +170,7 @@ function es1sc_plugin_options() {
 							<option value="<?php echo $key ?>" <?php echo $selected ?>> <?php echo $option; ?></option>
 						<?php } ?>
 					</select>
-					<?php echo $value['desc']; ?>
+					<p class="description"><?php echo $value['desc']; ?></p>
 				</td>
 			</tr>
 			<?php
@@ -174,7 +186,7 @@ function es1sc_plugin_options() {
 							rows="<?php echo $ta_options['rows']; ?>"><?php
 							echo stripslashes(get_option($value['id'], $value['std'])); ?>
 						</textarea>
-						<br /><?php echo $value['desc']; ?>
+						<p class="description"><?php echo $value['desc']; ?></p>
 					</td>
 				</tr>
 			<?php
@@ -198,7 +210,7 @@ function es1sc_plugin_options() {
 								/><?php echo $option; ?>
 								<br />
 						<?php } ?>
-						<?php echo $value['desc']; ?>
+						<p class="description"><?php echo $value['desc']; ?></p>
 					</td>
 				</tr>
 			<?php
@@ -221,7 +233,7 @@ function es1sc_plugin_options() {
 							value="true"
 							<?php echo $checked; ?>
 							/>
-							<?php echo $value['desc']; ?>
+							<p class="description"><?php echo $value['desc']; ?></p>
 					</td>
 				</tr>
 			<?php
@@ -233,7 +245,7 @@ function es1sc_plugin_options() {
 	echo '	</table>';
 	echo '	<p class="submit">';
 	echo '	<input type="hidden" name="es1sc_admin" value="update_settings" />';
-	echo '	<input type="submit" class="button-primary" value="Save Changes" />';
+	echo '	<input type="submit" class="button button-primary" value="Save Changes" />';
 	echo '	</p>';
 	echo '	</form>';
 	echo '</div>';
@@ -244,18 +256,30 @@ function es1sc_plugin_options() {
 	echo '		<div class="metabox-holder">';
 	echo '			<div class="meta-box-sortables">';
 						plugin_like();
-						plugin_didyouknow();
 						plugin_help();
+						plugin_didyouknow();
 	echo '				</div>';
 	echo '				<br/><br/><br/>';
 	echo '			</div>';
 	echo '		</div>';
 
-
-
-
-
 	echo '</div>';
+	echo '<div style="clear:both;"> </div>';
+	echo '<hr />';
+	echo '<h2>ES1SC Shortcodes</h2>'."\n";
+
+	echo '<h3><a href="http://equalserving.uservoice.com/knowledgebase/articles/217339-product-list-shortcode-free" target="_blank">&raquo; For more shortcode option information, please see our FAQs &laquo;</a>.</h3>'."\n";
+
+	echo '<h3><strong>Product List Options</strong></h3>'."\n";
+	echo '<dl>';
+	echo '<dt><strong>Complete Product List</strong></dt>'."\n";
+	echo '<dd>To display a complete active list of products on a page or post - include the shortcode without any attributes. You should only use this version of the shortcode if you have a small product catelog - 50 products or less. Otherwise, please see the next option below.'."\n";
+	echo '<br /><code>[es1sc_prodlist]</code></dd>'."\n";
+	echo '<dt><strong>Specific Product List</strong></dt>'."\n";
+	echo '<dd>To display a specific list of products on a page or post - include the shortcode with the prd_ids attribute.'."\n";
+	echo '<br /><code>[es1sc_prodlist prd_ids="2723132, 9223971,9209291,9084234"]</code></dd>'."\n";
+	echo '</dl>';
+
 
 }
 
@@ -307,6 +331,8 @@ function es1sc_product_list($atts) {
 	extract(shortcode_atts(array("prd_ids" => 0), $atts));
 	if (isset($prd_ids) && $prd_ids != "") {
 		$prd_ids_temp = explode(",",$prd_ids);
+		// Trim all whitespace before or after product ids
+		$prd_ids_temp = array_map('trim', $prd_ids_temp);
 		$prd_ids = (object) $prd_ids_temp;
 	} else {
 		$limitoffset = 0;
@@ -348,12 +374,13 @@ function es1sc_product_list($atts) {
 				$ImageUrl = '<img class="product_image" src="'. $ImageUrlSrc.'" alt="'.$product_details->ProductInfo->ProductName.'" />';
 
 				$ProductPrice = "";
-				if ($product_details->ProductInfo->UseSalePrice == "true") {
+				if ($product_details->ProductInfo->UseSalePrice == "true" && 
+						((double)$product_details->ProductInfo->SalePrice != (double)$product_details->ProductInfo->ProductPrice) )  {
 					$ProductPrice .= '<span class="regular">Retail Price: <strike>$'.$product_details->ProductInfo->ProductPrice.'</strike></span> <span class="save-percent">Save: ';
-					$ProductPrice .= number_format(((float)$product_details->ProductInfo->ProductPrice - (float)$product_details->ProductInfo->SalePrice) / (float)$product_details->ProductInfo->ProductPrice * 100, 0, '.', ',').'%';
+					$ProductPrice .= number_format(((double)$product_details->ProductInfo->ProductPrice - (double)$product_details->ProductInfo->SalePrice) / (double)$product_details->ProductInfo->ProductPrice * 100, 0, '.', ',').'%';
 					$ProductPrice .= '</span>  <span class="save-dollar">Save $';
-					$ProductPrice .= number_format((float)$product_details->ProductInfo->ProductPrice - (float)$product_details->ProductInfo->SalePrice, 2, '.', ',');
-					$ProductPrice .= '</span> <span class="sale">Sale Price $'.(float)number_format($product_details->ProductInfo->SalePrice, 2, '.', ',').'</span>';
+					$ProductPrice .= number_format((double)$product_details->ProductInfo->ProductPrice - (double)$product_details->ProductInfo->SalePrice, 2, '.', ',');
+					$ProductPrice .= '</span> <span class="sale">Sale Price $'.number_format((double)$product_details->ProductInfo->SalePrice, 2, '.', ',').'</span>';
 				} else {
 					$ProductPrice .= '<span class="regular">Regular Price: $'.$product_details->ProductInfo->ProductPrice.'</span>';
 				}
@@ -387,67 +414,6 @@ function es1sc_product_list($atts) {
 	return $retVal;
 }
 
-function _es1sc_product_list($atts) {
-	global $shop;
-
-	$display_format = stripslashes(get_option('es1sc_product_list_item_format'));
-
-	$retVal = "";
-
-	extract(shortcode_atts(array("prd_ids" => 0), $atts));
-	if (isset($prd_ids) && $prd_ids != "") {
-		$prd_ids_temp = explode(",",$prd_ids);
-		$prd_ids = (object) $prd_ids_temp;
-	} else {
-		$limitoffset = 0;
-		$limitcount = 30;
-		$prd_ids = array();
-		while (!is_null($limitoffset)) {
-			$shop->_apiParameters = array("LimitCount" => $limitcount, "LimitOffset" => $limitoffset);
-			$products_xml = $shop->GetProductsList();
-			$products = @simplexml_load_string($products_xml) or die ("no file loaded");
-			//print_r($products);
-			foreach ($products->Products->Product as $prd_id) {
-				$prd_ids[] = $prd_id;
-			}
-			$limitoffset = $products->NextRecordSet->LimitOffset;
-		}
-	}
-	foreach ($prd_ids as $prd_id) {
-		$product_details_xml = $shop->GetProductById($prd_id);
-		$product_details = @simplexml_load_string($product_details_xml) or die ("no file loaded");
-
-		if ($product_details->ProductInfo->IsActive == "true") {
-			if ($product_details->ProductInfo->ImageUrl == "") {
-				$ImageUrlSrc = get_option('es1sc_no_image');
-			} else {
-				$ImageUrlSrc = "https://www.mcssl.com".$product_details->ProductInfo->ImageUrl;
-			}
-			$ImageUrl = '<img class="product_image" src="'. $ImageUrlSrc.'" alt="'.$product_details->ProductInfo->ProductName.'" />';
-
-			$ProductPrice = "";
-			if ($product_details->ProductInfo->UseSalePrice == "true") {
-				$ProductPrice .= '<strike>$'.$product_details->ProductInfo->ProductPrice.'</strike> Only $'.$product_details->ProductInfo->SalePrice;
-			} else {
-				$ProductPrice .= "$".$product_details->ProductInfo->ProductPrice;
-			}
-			$es1sc_buynow_url = trim(get_option('es1sc_buynow_url'));
-			if (substr($es1sc_buynow_url,-4) == ".php") {
-				$es1sc_buynow_url = $es1sc_buynow_url."?";
-			} else {
-				$es1sc_buynow_url = $es1sc_buynow_url."&";
-			}
-			$BuyNow = '<a href="'.$es1sc_buynow_url.'pid='.$product_details->ProductInfo->VisibleId.'"><img src="'.get_option('es1sc_cart_image').'" alt="Add to Cart" /></a>';
-
-			$aVariables = array('#ProductName', '#ProductImage', '#ShortDescription', '#LongDescription', '#ProductSku', '#ProductPrice','#BuyNow');
-			$aReplacements = array($product_details->ProductInfo->ProductName, $ImageUrl, wpautop($product_details->ProductInfo->ShortDescription), wpautop($product_details->ProductInfo->LongDescription), $product_details->ProductInfo->ProductSku, $ProductPrice, $BuyNow);
-
-			$retVal .= str_replace($aVariables, $aReplacements, $display_format);
-		}
-	}
-
-	return $retVal;
-}
 add_shortcode('es1sc_prodlist', 'es1sc_product_list');
 
 /**
@@ -478,21 +444,109 @@ function plugin_like() {
 function plugin_didyouknow() {
 	$content = '<ul>';
 	$content .= '<li>- You can create a listing of products by categories to include on specific pages.  To do so, you would include the following  shortcode<br />[es1sc_prodlist prd_ids="XXXX01,XXXX02,XXXX03,XXXX04,XXXX05"]. where <em>XXXX99</em> is the 1ShoppingCart.com product ids separated by commas.</li>';
-	$content .= '<li>- This plugin comes with a number of "add to cart images."  The images are black, white, red, blue, orange, green and purple. These images are y are located at '.plugin_dir_url(__FILE__).'images/add-to-cart-COLOR.png. Just replace COLOR with the actual color you would like to use in lowercase, such as: '.plugin_dir_url(__FILE__).'images/add-to-cart-red.png.</li>';
-	$content .= '<li>- This plugin comes with a black and white no image available image. It is located at '.plugin_dir_url(__FILE__).'images/image-not-available.png.</li>';
+	$content .= '<li>- This plugin comes with a number of "add to cart images."  The images are black, white, red, blue, orange, green and purple. These images are y are located at '.plugin_dir_url(__FILE__).'images/add-to-cart-COLOR.png. Just replace COLOR with the actual color you would like to use in lowercase, such as: <a href="'.plugin_dir_url(__FILE__).'images/add-to-cart-red.png" target="_blank">'.plugin_dir_url(__FILE__).'images/add-to-cart-red.png</a>.</li>';
+	$content .= '<li>- This plugin comes with a black and white no image available image. It is located at <a href="'.plugin_dir_url(__FILE__).'images/image-not-available.png" target="_blank">'.plugin_dir_url(__FILE__).'images/image-not-available.png</a>.</li>';
 	$content .= '</ul>';
 	postbox('free-wordpress-plugin-for-1shoppingcart'.'-didyouknow', 'Did You Know?', $content);
 }
-
 
 function plugin_help() {
 	$content = '<p>'.__('Do you need help to get this plugin working?','es1scplugin').'</p>';
 	$content .= '<p>Please check following resources:</p>';
 	$content .= '<ul>';
-	$content .= '<li>- <a href="http://www.equalserving.com/products-page/wordpress-plugin/free-wordpress-plugin-for-1shoppingcart/" target="_blank">Visit the Free Wordpress Plugin For 1ShoppingCart.com</a></li>';
-	$content .= '<li>- <a href="http://www.equalserving.com/2011/12/free-wordpress-plugin-for-1shoppingcart-com/" target="_blank">Check the detailed installation instruction</a></li>';
-	$content .= '<li>- <a href="http://wpdemo.equalserving.com/store/" target="_blank">See how the plugin works</a></li>';
+	$content .= '<li>&nbsp; &raquo; &nbsp; <a href="http://www.equalserving.com/free-wordpress-plugin-for-1shoppingcart-com/" target="_blank">Check the detailed installation instruction</a></li>';
+	$content .= '<li>&nbsp; &raquo; &nbsp; <a href="http://equalserving.uservoice.com/knowledgebase" target="_blank">FAQs</a></li>';
+	$content .= '<li>&nbsp; &raquo; &nbsp; <a href="http://youtu.be/41pPvpH_j6U" target="_blank">Video with step by step instructions to configure the plugin</a></li>';
+	$content .= '<li>&nbsp; &raquo; &nbsp; <a href="http://wpdemo.equalserving.com/store/" target="_blank">See how the plugin works</a></li>';
 	$content .= '</ul>';
-	postbox('free-wordpress-plugin-for-1shoppingcart'.'-help', 'Help', $content);
+	$content .= '<hr /><p><strong>Troubleshooting</strong></p><hr />';
+	$content .= '<p><strong>To verify that you have entered the correct 1ShoppingCart.com API Merchant ID and Key, please click on the link below -</strong><br />';
+	$content .= '<a href="https://www.mcssl.com/API/'.get_option('es1sc_merchant_id').'/Products/LIST?key='.get_option('es1sc_merchant_key').'" target="_blank">Verify 1Shoppingcart.com Data</a>';
+	$content .= '</p>';
+	$content .= '<p>If you see the following message (in red below) when you click on the above link and you have ensured that the Merchant Id and Key you entered is correct, PLEASE contact 1ShoppingCart.com Support at ';
+	$content .= '<a href="http://www.1shoppingcart.com/customer-support" target="_blank">http://www.1shoppingcart.com/customer-support</a> as there is a problem only they can resolve for you.<br />';
+	$content .= '<span style="color:#f00;">&lt;Response success="false"&gt;<br />&nbsp;&nbsp;&nbsp;&lt;Error code="4010"&gt;Not authorized&lt;/Error&gt;<br />&lt;/Response&gt;</span></p>';
+	$test_results = es1sc_test_access();
+	if ($test_results) {
+		$content .= '<p><strong>Methods available via API:</strong><br />';
+		foreach ($test_results as $test_result) {
+			$content .= var_export($test_result, true).'<br />';
+		}
+		$content .= '</p>';
+	}
+	postbox('wordpress-plugin-for-1shoppingcart'.'-help', 'Help', $content);
 }
+function es1sc_test_access() {
+
+	$merchantId = get_option('es1sc_merchant_id');
+	$merchantKey = get_option('es1sc_merchant_key');
+	$apiUri = get_option('es1sc_api_uri');
+	if (empty($merchantId) || empty($merchantKey) || empty($apiUri) ) {
+		return FALSE;
+	} else {
+		$uri = $apiUri."/API/".$merchantId;
+		$request_body = "<Request><Key>".$merchantKey."</Key></Request>";
+		$mode = "";
+
+		if ( function_exists('curl_version') == "Enabled" ){
+			$mode = "cURL";
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $uri);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $request_body);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-POST_DATA_FORMAT: xml'));
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); # TODO - SET THIS TO true FOR PRODUCTION
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			$data = curl_exec($ch);
+			curl_exec($ch);
+			$err = curl_error($ch);
+			curl_close($ch);
+			if ($err) {
+				//return $err;
+			}
+			//return $data;
+		} else {
+			$mode = "stream_context_create";
+			$params = array('http' => array(
+					'method' => 'POST',
+					'content' => $request_body
+					));
+			$ctx = stream_context_create($params);
+			$fp = @fopen($uri, 'rb', false, $ctx);
+			if (!$fp) {
+				throw new Exception("Problem with $uri, $php_errormsg");
+			}
+			$data = @stream_get_contents($fp);
+			if ($data === false) {
+				throw new Exception("Problem reading data from $uri, $php_errormsg");
+			}
+			$err = $php_errormsg;
+			//return $response;
+		}
+		libxml_use_internal_errors(true);
+		$doc = simplexml_load_string($data);
+		$xml = (array)$doc;
+
+		if (!$doc) {
+	    	$errors = libxml_get_errors();
+
+	    	//foreach ($errors as $error) {
+	        //	echo display_xml_error($error, $xml);
+	    	//}
+
+	    	$xml = array_merge ( $err, $errors, $xml );
+
+	    	libxml_clear_errors();
+		}
+		return $xml;
+	}
+}
+add_action('admin_enqueue_scripts', 'es1sc_admin_scripts');
+
+function es1sc_admin_scripts($hook) {
+	global $es1sc_settings_page;
+	if( $hook != $es1sc_settings_page )
+		return;
+	wp_enqueue_script('dashboard');
+}
+
 ?>
