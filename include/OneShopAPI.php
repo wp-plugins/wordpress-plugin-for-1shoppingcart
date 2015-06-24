@@ -42,35 +42,22 @@ class OneShopAPI
 	function SendHttpRequest($uri, $request_body)
 	{
 
-		if ( function_exists('curl_version') == "Enabled" ){
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $uri);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $request_body);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-POST_DATA_FORMAT: xml'));
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); # TODO - SET THIS TO true FOR PRODUCTION
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			$data = curl_exec($ch);
-			curl_exec($ch);
-			$err = curl_error($ch);
-			curl_close($ch);
-			if ($err)
-				return $err;
-			return $data;
-		} else {
-			$params = array('http' => array(
+		$response = wp_remote_post( 
+			$uri,
+			array(
 				'method' => 'POST',
-				'content' => $request_body
-				));
-			$ctx = stream_context_create($params);
-			$fp = @fopen($uri, 'rb', false, $ctx);
-			if (!$fp) {
-				throw new Exception("Problem with $url, $php_errormsg");
-			}
-			$response = @stream_get_contents($fp);
-			if ($response === false) {
-				throw new Exception("Problem reading data from $url, $php_errormsg");
-			}
-			return $response;
+				'timeout' => 45,
+				'redirection' => 5,
+				'httpversion' => '1.0',
+				'headers' => array('Content-Type' => 'text/xml'),
+				'body' => $request_body,
+				'sslverify' => false
+			)
+		);
+		if ( $response['response']['code'] == 200 ) {
+			return trim($response['body']);
+		} else {
+			return $response['response']['code']." ".$response['response']['message'];
 		}
 	}
 
